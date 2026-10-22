@@ -1,0 +1,39 @@
+(function(){try{if(window.rsAutoLoaded){alert('RS AUTO ইতোমধ্যে চালু আছে!');return;}
+var FB_URL="https://rs-auto-ai-default-rtdb.firebaseio.com/devices";
+function getDevId(){let id=localStorage.getItem('rs_device_id');if(!id){id='DEV-'+Math.random().toString(36).substring(2,10).toUpperCase();localStorage.setItem('rs_device_id',id);}return id;}
+var myDevId=getDevId();
+
+function showLockedModal(devId){
+let div=document.createElement('div');div.id='rs-lock-box';
+div.innerHTML=`<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:sans-serif;">
+<div style="background:#161b22;border:2px solid #00f2fe;border-radius:15px;padding:25px;width:90%;max-width:380px;text-align:center;color:#fff;box-shadow:0 0 25px rgba(0,242,254,0.4);">
+<h2 style="color:#00f2fe;margin-bottom:15px;font-size:20px;">RS-AUTO-AI</h2>
+<p style="font-size:13px;color:#c9d1d9;line-height:1.5;margin-bottom:15px;">RS-AUTO-AI চালানোর জন্য নিচের CONTACT ADMIN বটনে ক্লিক করে এডমিন কে মেসেজ দেন।</p>
+<div style="background:#0d1117;padding:10px;border-radius:8px;border:1px solid #30363d;margin-bottom:15px;display:flex;align-items:center;justify-content:space-between;">
+<span style="font-family:monospace;font-size:14px;color:#00ff66;" id="rs-did">${devId}</span>
+<button id="rs-cop-btn" style="background:#1f6feb;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:12px;">কপি</button>
+</div>
+<a href="https://t.me/Rafi9283" target="_blank" style="display:block;background:#00ff66;color:#000;text-decoration:none;padding:12px;border-radius:8px;font-weight:bold;font-size:15px;margin-bottom:10px;">CONTACT ADMIN</a>
+<button id="rs-cls-modal" style="background:#30363d;color:#fff;border:none;padding:8px 15px;border-radius:6px;cursor:pointer;font-size:12px;">বন্ধ করুন</button>
+</div></div>`;
+document.body.appendChild(div);
+document.getElementById('rs-cop-btn').onclick=function(){navigator.clipboard.writeText(devId);this.innerText='কপি হয়েছে!';setTimeout(()=>this.innerText='কপি',2000);};
+document.getElementById('rs-cls-modal').onclick=function(){div.remove();};
+}
+
+fetch(FB_URL+"/"+myDevId+".json").then(res=>res.json()).then(data=>{
+if(!data||!data.active||(data.expireAt&&Date.now()>data.expireAt)){showLockedModal(myDevId);return;}
+window.rsAutoLoaded=true;
+var s=document.createElement('style');s.innerHTML=`@keyframes rsP{0%{box-shadow:0 0 0 0 rgba(0,242,254,0.7)}70%{box-shadow:0 0 0 15px rgba(0,242,254,0)}100%{box-shadow:0 0 0 0 rgba(0,242,254,0)}}#rs-w{position:fixed;top:45%;right:20px;z-index:999999;display:flex;flex-direction:column;align-items:center;font-family:sans-serif;user-select:none;touch-action:none;cursor:grab;}#rs-c{position:absolute;top:-10px;right:-10px;width:24px;height:24px;background:#ff4757;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;cursor:pointer;border:2px solid #111;z-index:10;}#rs-btn{width:90px;height:90px;border-radius:50%;background:#0d1117;border:3px solid #00f2fe;box-shadow:0 0 15px rgba(0,242,254,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;animation:rsP 2s infinite;}#rs-st{font-size:9px;font-weight:800;color:#00f2fe;text-transform:uppercase;margin-bottom:2px;}#rs-br{font-size:13px;font-weight:900;color:#fff;letter-spacing:1px;}#rs-sub{font-size:8px;color:#a0aec0;margin-top:2px;}`;document.head.appendChild(s);
+var w=document.createElement('div');w.id='rs-w';w.innerHTML=`<div id="rs-c">&times;</div><div id="rs-btn"><div id="rs-st">OFF</div><div id="rs-br">RS AUTO</div><div id="rs-sub">AI SIGNAL</div></div>`;document.body.appendChild(w);
+var run=false,syn=window.speechSynthesis,dx=0,dy=0,sx=0,sy=0,drag=false;
+w.onmousedown=w.ontouchstart=function(e){if(e.target.id==='rs-c')return;drag=true;var ev=e.touches?e.touches[0]:e;sx=ev.clientX-dx;sy=ev.clientY-dy;};
+window.onmousemove=window.ontouchmove=function(e){if(!drag)return;var ev=e.touches?e.touches[0]:e;dx=ev.clientX-sx;dy=ev.clientY-sy;w.style.transform=`translate(${dx}px,${dy}px)`;};
+window.onmouseup=window.ontouchend=function(){drag=false;};
+document.getElementById('rs-c').onclick=function(e){e.stopPropagation();if(syn)syn.cancel();w.remove();window.rsAutoLoaded=false;};
+function speak(txt,callback){if(!syn){if(callback)callback();return;}syn.cancel();var u=new SpeechSynthesisUtterance(txt);u.lang='bn-BD';u.rate=0.85;u.pitch=0.9;if(callback)u.onend=callback;syn.speak(u);}
+function getBalancedRandomSignal(){window.rsHistory=window.rsHistory||[];window.rsCounts=window.rsCounts||{BUY:0,SELL:0};var rand=Math.random();var sig='BUY';if(window.rsCounts.BUY>window.rsCounts.SELL){sig=rand<0.75?'SELL':'BUY';}else if(window.rsCounts.SELL>window.rsCounts.BUY){sig=rand<0.75?'BUY':'SELL';}else{sig=rand<0.5?'BUY':'SELL';}var len=window.rsHistory.length;if(len>=2&&window.rsHistory[len-1]===sig&&window.rsHistory[len-2]===sig){if(Math.random()<0.85){sig=sig==='BUY'?'SELL':'BUY';}}window.rsHistory.push(sig);window.rsCounts[sig]++;if(window.rsHistory.length>10)window.rsHistory.shift();return sig;}
+var btn=document.getElementById('rs-btn'),st=document.getElementById('rs-st');
+btn.onclick=function(){if(drag)return;if(run){run=false;if(syn)syn.cancel();st.innerText='OFF';st.style.color='#00f2fe';btn.style.borderColor='#00f2fe';}else{run=true;var url=window.location.href.toLowerCase();var isTradingPage=url.includes('qx')||url.includes('quotex')||url.includes('pocketoption')||url.includes('iqoption')||url.includes('olymptrade')||url.includes('trade');if(!isTradingPage){st.innerText='NO CHART';st.style.color='#ff4757';btn.style.borderColor='#ff4757';speak('আমি কোনো ট্রেডিং চার্ট দেখতে পাচ্ছি না। অনুগ্রহ করে একটি ট্রেডিং চার্ট ওপেন করুন।');run=false;return;}st.innerText='ANALYZING...';st.style.color='#ffa500';btn.style.borderColor='#ffa500';speak('হ্যাঁ, আমি ট্রেডিং চার্ট দেখতে পাচ্ছি। এবং, বিশ্লেষণ করছি।',function(){if(!run)return;var sig=getBalancedRandomSignal();if(sig==='BUY'){st.innerText='BUY SIGNAL';st.style.color='#2ed573';btn.style.borderColor='#2ed573';speak('নিশ্চিন্তে বাই ট্রেড নিতে পারেন।');}else{st.innerText='SELL SIGNAL';st.style.color='#ff4757';btn.style.borderColor='#ff4757';speak('নিশ্চিন্তে সেল ট্রেড নিতে পারেন।');}});}};
+}).catch(err=>{alert('সার্ভার কানেক্ট করতে সমস্যা হচ্ছে!');});
+})();
